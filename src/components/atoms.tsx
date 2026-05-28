@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import type { Intent, LeadStage } from "@/lib/types";
 
 export function IntentChip({ intent, className }: { intent: Intent; className?: string }) {
@@ -49,15 +50,60 @@ export function StageBadge({ stage }: { stage: LeadStage }) {
 }
 
 export function ConfidenceBar({ value }: { value: number }) {
-  const color =
-    value >= 75 ? "bg-destructive" : value >= 50 ? "bg-warning" : "bg-info";
+  const color = value >= 75 ? "bg-destructive" : value >= 50 ? "bg-warning" : "bg-info";
+
+  // Distribute the total `value` across the breakdown weights so the parts add up to `value`.
+  const weights = { budget: 25, tour: 30, response: 25, engagement: 20 };
+  const calc = (w: number) => Math.round((value * w) / 100);
+  let parts = {
+    budget: calc(weights.budget),
+    tour: calc(weights.tour),
+    response: calc(weights.response),
+    engagement: calc(weights.engagement),
+  };
+  const sum = Object.values(parts).reduce((a, b) => a + b, 0);
+  const diff = value - sum;
+  if (diff !== 0) {
+    // Adjust engagement to absorb rounding diff so total equals value.
+    parts.engagement += diff;
+  }
+
   return (
-    <div className="flex items-center gap-2">
-      <div className="h-1.5 w-20 rounded-full bg-muted overflow-hidden">
-        <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${value}%` }} />
-      </div>
-      <span className="text-[11px] font-mono text-muted-foreground tabular-nums">{value}</span>
-    </div>
+    <Popover>
+      <PopoverTrigger asChild>
+        <button onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 group">
+          <div className="h-1.5 w-20 rounded-full bg-muted overflow-hidden">
+            <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${value}%` }} />
+          </div>
+          <span className="text-[11px] font-mono text-muted-foreground tabular-nums">{value}</span>
+        </button>
+      </PopoverTrigger>
+
+      <PopoverContent sideOffset={6} className="w-64">
+        <div className="flex items-center justify-between">
+          <div className="font-medium">Lead IQ Breakdown</div>
+          <div className="text-sm text-muted-foreground font-mono tabular-nums">Total {value}/100</div>
+        </div>
+        <div className="mt-3 space-y-2 text-sm">
+          <div className="flex items-center justify-between">
+            <div className="text-muted-foreground">Budget Match</div>
+            <div className="font-mono">{parts.budget}/{weights.budget}</div>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="text-muted-foreground">Tour Fit</div>
+            <div className="font-mono">{parts.tour}/{weights.tour}</div>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="text-muted-foreground">Response Speed</div>
+            <div className="font-mono">{parts.response}/{weights.response}</div>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="text-muted-foreground">Engagement</div>
+            <div className="font-mono">{parts.engagement}/{weights.engagement}</div>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 

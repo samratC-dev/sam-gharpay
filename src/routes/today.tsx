@@ -7,8 +7,10 @@ import { buildDoNextQueue, computeTcmPerformance, type NextAction } from "@/lib/
 import { useMemo } from "react";
 import { QuickActionRow } from "@/components/QuickActionRow";
 import { format, formatDistanceToNow } from "date-fns";
-import { Sun, Flame, AlertTriangle, Phone, Trophy, Zap, ArrowUpRight } from "lucide-react";
-import { KpiCard } from "@/components/atoms";
+import { Sun, Flame, AlertTriangle, Phone, Trophy, Zap, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { KpiCard, ConfidenceBar } from "@/components/atoms";
 
 export const Route = createFileRoute("/today")({
   head: () => ({
@@ -21,7 +23,7 @@ export const Route = createFileRoute("/today")({
 });
 
 function TodayPage() {
-  const { role, currentTcmId, leads, tours, followUps, tcms, completeFollowUp } = useApp();
+  const { role, currentTcmId, leads, tours, followUps, tcms, completeFollowUp, updatePostTour, addFollowUp, setDecision } = useApp();
   const [now, mounted] = useMountedNow(15_000);
 
   const filterTcm = role === "tcm" ? currentTcmId : undefined;
@@ -132,6 +134,78 @@ function TodayPage() {
             leads={leads}
           />
         </section>
+
+        {/* Post-Tour Pipeline */}
+        <section className="rounded-xl border border-border bg-card overflow-hidden">
+          <header className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <div className="flex items-center gap-2">
+              <Flame className="h-4 w-4 text-accent" />
+              <h2 className="font-display text-sm font-semibold">Post-Tour Pipeline</h2>
+            </div>
+            <span className="text-[11px] font-mono text-muted-foreground">{leads.filter((l) => l.stage === "tour-done").length}</span>
+          </header>
+          <div className="p-3 space-y-2">
+            {leads.filter((l) => l.stage === "tour-done").map((l) => {
+              const leadTours = tours.filter((t) => t.leadId === l.id && t.status === "completed").sort((a, b) => +new Date(b.scheduledAt) - +new Date(a.scheduledAt));
+              const tour = leadTours[0];
+              if (!tour) return null;
+              const formFilled = !!tour.postTour.filledAt;
+              const follow = followUps.find((f) => f.tourId === tour.id);
+              const followDone = !!follow && follow.done;
+              const outcomeLogged = !!tour.decision;
+
+              const firstPending = !formFilled ? "form" : !followDone ? "follow" : !outcomeLogged ? "outcome" : null;
+
+              const handleMarkDone = async () => {
+                if (!firstPending) return;
+                if (firstPending === "form") {
+                  updatePostTour(tour.id, { filledAt: new Date().toISOString() });
+                  toast.success("Post-tour form marked filled");
+                } else if (firstPending === "follow") {
+                  if (follow) {
+                    completeFollowUp(follow.id);
+                    toast.success("Follow-up marked done");
+                  } else {
+                    addFollowUp({ leadId: l.id, tourId: tour.id, tcmId: tour.tcmId, dueAt: new Date().toISOString(), priority: "medium", reason: "Post-tour follow-up" });
+                    // find recently added follow-up and complete it via store state
+                    const f = (useApp as any).getState().followUps.find((f2: any) => f2.tourId === tour.id && !f2.done);
+                    if (f) completeFollowUp(f.id);
+                    toast.success("Follow-up sent and marked done");
+                  }
+                } else if (firstPending === "outcome") {
+                  setDecision(tour.id, "thinking");
+                  toast.success("Outcome logged (thinking)");
+                }
+              };
+
+              return (
+                <div key={l.id} className="rounded-md border border-border bg-card p-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-3">
+                      <div className="font-medium text-sm truncate">{l.name}</div>
+                      <div className="ml-2"><ConfidenceBar value={l.confidence} /></div>
+                    </div>
+                    <div className="mt-2 flex items-center gap-4 text-sm">
+                      <Step label="Form Filled" done={formFilled} />
+                      <Step label="Follow-up Sent" done={followDone} />
+                      <Step label="Outcome Logged" done={outcomeLogged} />
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0">
+                    {firstPending ? (
+                      <Button size="sm" onClick={handleMarkDone}>Mark Done</Button>
+                    ) : (
+                      <div className="text-sm text-success font-medium">All done</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {leads.filter((l) => l.stage === "tour-done").length === 0 && (
+              <div className="text-xs text-muted-foreground text-center py-6">No post-tour candidates.</div>
+            )}
+          </div>
+        </section>
       </div>
     </AppShell>
   );
@@ -189,6 +263,19 @@ function Legend({ color, label }: { color: string; label: string }) {
     <span className="inline-flex items-center gap-1.5">
       <span className={`h-1.5 w-1.5 rounded-full ${color}`} /> {label}
     </span>
+  );
+}
+
+function Step({ label, done }: { label: string; done: boolean }) {
+  return (
+    <div className="inline-flex items-center gap-2">
+      {done ? (
+        <CheckCircle2 className="h-4 w-4 text-success" />
+      ) : (
+        <span className="h-2.5 w-2.5 rounded-full bg-destructive inline-block" />
+      )}
+      <div className={`text-sm ${done ? "text-foreground font-medium" : "text-muted-foreground"}`}>{label}</div>
+    </div>
   );
 }
 

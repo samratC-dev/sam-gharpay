@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Target, CalendarPlus, ClipboardList, Boxes, Activity,
   Building2, Search, Sun, Command, Trophy, Sparkles, MessageSquare,
@@ -65,6 +65,7 @@ function PersonaPulse({ role, persona, queueCount, overdueCount, bookingsCount }
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { role, setRole, currentTcmId, setCurrentTcmId, tcms, leads, tours, followUps, handoffs, bookings } = useApp();
+  const navigate = useNavigate();
   const router = useRouterState();
   const path = router.location.pathname;
   const [now, mounted] = useMountedNow();
@@ -121,6 +122,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     ],
     "flow-ops": [
       { to: "/today", label: "Today", icon: Sun, badge: queue.length },
+      { to: "/alerts", label: "Property Alert Queue", icon: AlertTriangle },
       { to: "/inbox", label: "Inbox", icon: Inbox },
       { to: "/myt/leads", label: "Leads", icon: Target, accent: true },
       { to: "/myt/schedule", label: "Schedule", icon: CalendarPlus },
@@ -140,6 +142,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       { to: "/myt/tcm/performance", label: "My Stats", icon: Activity },
     ],
     owner: [
+      { to: "/owners", label: "Property Health", icon: HeartPulse, accent: true },
       { to: "/owner", label: "Owner Home", icon: ShieldCheck, accent: true },
       { to: "/owner/blocks", label: "Approvals", icon: Inbox },
       { to: "/owner/rooms", label: "Rooms", icon: Building2 },
@@ -230,7 +233,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             </kbd>
           </div>
           <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground px-1">View as</div>
-          <Select value={role} onValueChange={(v) => setRole(v as typeof role)}>
+          <Select value={role} onValueChange={(v) => {
+            const nextRole = v as typeof role;
+            setRole(nextRole);
+            if (nextRole === "owner") navigate({ to: "/owners" });
+          }}>
             <SelectTrigger className="bg-sidebar-accent border-sidebar-border text-sidebar-accent-foreground h-8 text-xs">
               <SelectValue />
             </SelectTrigger>

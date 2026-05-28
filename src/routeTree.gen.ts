@@ -17,6 +17,7 @@ import { Route as SequencesRouteImport } from './routes/sequences'
 import { Route as RevivalRouteImport } from './routes/revival'
 import { Route as RevenueRouteImport } from './routes/revenue'
 import { Route as QueueRouteImport } from './routes/queue'
+import { Route as OwnersRouteImport } from './routes/owners'
 import { Route as ManagerRouteImport } from './routes/manager'
 import { Route as LeadsRouteImport } from './routes/leads'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
@@ -29,6 +30,7 @@ import { Route as HandoffsRouteImport } from './routes/handoffs'
 import { Route as FollowUpsRouteImport } from './routes/follow-ups'
 import { Route as CoachRouteImport } from './routes/coach'
 import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SupplyHubIndexRouteImport } from './routes/supply-hub/index'
@@ -110,6 +112,11 @@ const QueueRoute = QueueRouteImport.update({
   path: '/queue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OwnersRoute = OwnersRouteImport.update({
+  id: '/owners',
+  path: '/owners',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ManagerRoute = ManagerRouteImport.update({
   id: '/manager',
   path: '/manager',
@@ -168,6 +175,11 @@ const CoachRoute = CoachRouteImport.update({
 const CalendarRoute = CalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ActivityRoute = ActivityRouteImport.update({
@@ -374,6 +386,7 @@ const MytTourIdReportRoute = MytTourIdReportRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
+  '/alerts': typeof AlertsRoute
   '/calendar': typeof CalendarRoute
   '/coach': typeof CoachRoute
   '/follow-ups': typeof FollowUpsRoute
@@ -386,6 +399,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/leads': typeof LeadsRouteWithChildren
   '/manager': typeof ManagerRoute
+  '/owners': typeof OwnersRoute
   '/queue': typeof QueueRoute
   '/revenue': typeof RevenueRoute
   '/revival': typeof RevivalRoute
@@ -436,6 +450,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
+  '/alerts': typeof AlertsRoute
   '/calendar': typeof CalendarRoute
   '/coach': typeof CoachRoute
   '/follow-ups': typeof FollowUpsRoute
@@ -448,6 +463,7 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/leads': typeof LeadsRouteWithChildren
   '/manager': typeof ManagerRoute
+  '/owners': typeof OwnersRoute
   '/queue': typeof QueueRoute
   '/revenue': typeof RevenueRoute
   '/revival': typeof RevivalRoute
@@ -499,6 +515,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
+  '/alerts': typeof AlertsRoute
   '/calendar': typeof CalendarRoute
   '/coach': typeof CoachRoute
   '/follow-ups': typeof FollowUpsRoute
@@ -511,6 +528,7 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/leads': typeof LeadsRouteWithChildren
   '/manager': typeof ManagerRoute
+  '/owners': typeof OwnersRoute
   '/queue': typeof QueueRoute
   '/revenue': typeof RevenueRoute
   '/revival': typeof RevivalRoute
@@ -563,6 +581,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/activity'
+    | '/alerts'
     | '/calendar'
     | '/coach'
     | '/follow-ups'
@@ -575,6 +594,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/leads'
     | '/manager'
+    | '/owners'
     | '/queue'
     | '/revenue'
     | '/revival'
@@ -625,6 +645,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/activity'
+    | '/alerts'
     | '/calendar'
     | '/coach'
     | '/follow-ups'
@@ -637,6 +658,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/leads'
     | '/manager'
+    | '/owners'
     | '/queue'
     | '/revenue'
     | '/revival'
@@ -687,6 +709,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/activity'
+    | '/alerts'
     | '/calendar'
     | '/coach'
     | '/follow-ups'
@@ -699,6 +722,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/leads'
     | '/manager'
+    | '/owners'
     | '/queue'
     | '/revenue'
     | '/revival'
@@ -750,6 +774,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivityRoute: typeof ActivityRoute
+  AlertsRoute: typeof AlertsRoute
   CalendarRoute: typeof CalendarRoute
   CoachRoute: typeof CoachRoute
   FollowUpsRoute: typeof FollowUpsRoute
@@ -762,6 +787,7 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   LeadsRoute: typeof LeadsRouteWithChildren
   ManagerRoute: typeof ManagerRoute
+  OwnersRoute: typeof OwnersRoute
   QueueRoute: typeof QueueRoute
   RevenueRoute: typeof RevenueRoute
   RevivalRoute: typeof RevivalRoute
@@ -864,6 +890,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QueueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/owners': {
+      id: '/owners'
+      path: '/owners'
+      fullPath: '/owners'
+      preLoaderRoute: typeof OwnersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/manager': {
       id: '/manager'
       path: '/manager'
@@ -946,6 +979,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/activity': {
@@ -1269,6 +1309,7 @@ const MytTourIdRouteWithChildren = MytTourIdRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivityRoute: ActivityRoute,
+  AlertsRoute: AlertsRoute,
   CalendarRoute: CalendarRoute,
   CoachRoute: CoachRoute,
   FollowUpsRoute: FollowUpsRoute,
@@ -1281,6 +1322,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   LeadsRoute: LeadsRouteWithChildren,
   ManagerRoute: ManagerRoute,
+  OwnersRoute: OwnersRoute,
   QueueRoute: QueueRoute,
   RevenueRoute: RevenueRoute,
   RevivalRoute: RevivalRoute,
